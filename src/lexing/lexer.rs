@@ -33,7 +33,7 @@ impl <'a> Lexer<'a> {
     }
 
     pub fn is_done(&mut self) -> bool {
-        self.source.peek() == None
+        self.source.peek().is_none()
     }
 
     pub fn scan_token(&mut self) -> Option<Token> {
