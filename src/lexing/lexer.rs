@@ -33,7 +33,7 @@ impl <'a> Lexer<'a> {
     }
 
     pub fn is_done(&mut self) -> bool {
-        self.peek() == None
+        self.source.peek() == None
     }
 
     pub fn scan_token(&mut self) -> Option<Token> {
@@ -102,8 +102,6 @@ impl <'a> Lexer<'a> {
             }
             
         };
-
-        self.source.peek();
 
         match token_type {
             Some(typ) => {
