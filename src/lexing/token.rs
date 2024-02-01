@@ -1,5 +1,7 @@
 use crate::position::Position;
 
+#[allow(clippy::upper_case_acronyms)]
+#[derive(Debug)]
 pub enum TokenType {
      // Single-character tokens.
     LEFTPAREN, RIGHTPAREN, LEFTBRACE, RIGHTBRACE,
@@ -12,8 +14,8 @@ pub enum TokenType {
     LESS, LESSEQUAL,
 
     // Literals.
-    IDENTIFIER, STRING, NUMBER,
-
+    IDENTIFIER, STRING, NUMBER, 
+    
     // Keywords.
     AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR,
     PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
@@ -21,8 +23,10 @@ pub enum TokenType {
     EOF
 }
 
+#[derive(Debug)]
 pub struct Token<'a> {
     pub typ : TokenType,
     pub lexeme : &'a str,
-    pub pos : Position
+    pub from_pos : Position,
+    pub to_pos : Position
 }
