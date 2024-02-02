@@ -180,6 +180,7 @@ impl Lexer<'_> {
                     next = self.peek();
                 }
                 if next.is_some() {
+                    let _ = self.next();
                     (Some(STRING), Some(buf))
                 } else {
                     print!(

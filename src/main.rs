@@ -9,8 +9,8 @@ mod position;
 
 fn main() {
     let mut lex = lexing::lexer::Lexer {
-        source : "// this is a comment\n(( )){} // grouping stuff\n!*+-/=<> <= == // operators\n1234.45*2.3.sqrt()".chars().peekmore(),
-        position: Position::default()
+        source: "\"t'is this time of the year\" - 123321".chars().peekmore(),
+        position: Position::default(),
     };
 
     while !lex.is_done() {
