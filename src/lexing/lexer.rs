@@ -1,16 +1,39 @@
-
 use std::str::Chars;
 
 use peekmore::PeekMoreIterator;
 
-use crate::{lexing::token::{*, TokenType::*}, position::Position};
+use crate::{
+    lexing::token::{TokenType::*, *},
+    position::Position,
+};
 
 pub struct Lexer<'a> {
-    pub source : PeekMoreIterator<Chars<'a>>,
-    pub position : Position
+    pub source: PeekMoreIterator<Chars<'a>>,
+    pub position: Position,
 }
 
 impl Lexer<'_> {
+    pub fn identify_keyword(s: &str) -> Option<TokenType> {
+        match s {
+            "and" => Some(AND),
+            "class" => Some(CLASS),
+            "else" => Some(ELSE),
+            "false" => Some(FALSE),
+            "for" => Some(FOR),
+            "fun" => Some(FUN),
+            "if" => Some(IF),
+            "nil" => Some(NIL),
+            "or" => Some(OR),
+            "print" => Some(PRINT),
+            "return" => Some(RETURN),
+            "super" => Some(SUPER),
+            "this" => Some(THIS),
+            "true" => Some(TRUE),
+            "var" => Some(VAR),
+            "while" => Some(WHILE),
+            _ => None,
+        }
+    }
 
     fn next(&mut self) -> Option<char> {
         let char = self.source.next()?;
@@ -26,7 +49,7 @@ impl Lexer<'_> {
         self.source.peek().copied()
     }
 
-    fn match_peek(&mut self, expected : char) -> bool {
+    fn match_peek(&mut self, expected: char) -> bool {
         let matching = self.peek() == Some(expected);
         if matching {
             let _ = self.next(); //force consumption if match
@@ -41,7 +64,7 @@ impl Lexer<'_> {
     pub fn scan_token(&mut self) -> Option<Token> {
         let init_pos = self.position;
 
-        let char = self.next()?; 
+        let char = self.next()?;
 
         let (token_type, lexeme) = match char {
             '(' => (Some(LEFTPAREN), None),
@@ -54,42 +77,47 @@ impl Lexer<'_> {
             '-' => (Some(MINUS), None),
             ';' => (Some(SEMICOLON), None),
             '*' => (Some(STAR), None),
-            '!' => 
+            '!' => {
                 if self.match_peek('=') {
                     (Some(BANGEQUAL), None)
                 } else {
                     (Some(BANG), None)
                 }
-            '=' => 
+            }
+            '=' => {
                 if self.match_peek('=') {
                     (Some(EQUALEQUAL), None)
                 } else {
                     (Some(EQUAL), None)
                 }
-            '<' => 
+            }
+            '<' => {
                 if self.match_peek('=') {
                     (Some(LESSEQUAL), None)
                 } else {
                     (Some(LESS), None)
                 }
-            '>' => 
+            }
+            '>' => {
                 if self.match_peek('=') {
                     (Some(GREATEREQUAL), None)
                 } else {
                     (Some(GREATER), None)
                 }
-            '/' =>
+            }
+            '/' => {
                 if self.match_peek('/') {
-                  // A comment goes until the end of the line.
-                  let mut next = self.peek();
-                  while next != Some('\n') && next.is_some() {
-                    let _ = self.next();
-                    next = self.peek();
-                  }
-                  (None, None)
+                    // A comment goes until the end of the line.
+                    let mut next = self.peek();
+                    while next != Some('\n') && next.is_some() {
+                        let _ = self.next();
+                        next = self.peek();
+                    }
+                    (None, None)
                 } else {
-                  (Some(SLASH), None)
+                    (Some(SLASH), None)
                 }
+            }
 
             x if x.is_whitespace() => {
                 let mut next = self.peek();
@@ -109,7 +137,13 @@ impl Lexer<'_> {
                     let _ = self.next();
                     next = self.peek();
                 }
-                if next == Some('.') && self.source.advance_cursor().peek().is_some_and(|c| c.is_ascii_digit()){
+                if next == Some('.')
+                    && self
+                        .source
+                        .advance_cursor()
+                        .peek()
+                        .is_some_and(|c| c.is_ascii_digit())
+                {
                     buf.push('.');
                     self.source.reset_cursor();
                     let _ = self.next();
@@ -133,7 +167,8 @@ impl Lexer<'_> {
                     let _ = self.next();
                     next = self.peek();
                 }
-                (Some(IDENTIFIER), Some(buf))
+                let id = Self::identify_keyword(&buf).unwrap_or(IDENTIFIER);
+                (Some(id), Some(buf))
             }
 
             '"' => {
@@ -147,31 +182,31 @@ impl Lexer<'_> {
                 if next.is_some() {
                     (Some(STRING), Some(buf))
                 } else {
-                    print!("Encountered unterminated string starting at position {}.", init_pos.pretty_print());
+                    print!(
+                        "Encountered unterminated string starting at position {}.",
+                        init_pos.pretty_print()
+                    );
                     (None, None)
                 }
-            }, 
-                
+            }
+
             _ => {
-                print!("Encountered unknown character at position {}.", self.position.pretty_print());
+                print!(
+                    "Encountered unknown character at position {}.",
+                    self.position.pretty_print()
+                );
                 (None, None)
             }
-            
         };
 
         match token_type {
-            Some(typ) => {
-                Some(Token {
-                    typ,
-                    lexeme : lexeme.unwrap_or(String::new()),
-                    from_pos : init_pos,
-                    to_pos : self.position
-                })
-            }
-            | None => None
-
+            Some(typ) => Some(Token {
+                typ,
+                lexeme: lexeme.unwrap_or(String::new()),
+                from_pos: init_pos,
+                to_pos: self.position,
+            }),
+            None => None,
         }
-        
     }
-
 }

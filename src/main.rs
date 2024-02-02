@@ -14,7 +14,7 @@ fn main() {
     };
 
     while !lex.is_done() {
-        if let Some(x) = lex.scan_token()  {
+        if let Some(x) = lex.scan_token() {
             println!("{:?}", x)
         }
     }
