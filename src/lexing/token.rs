@@ -24,9 +24,9 @@ pub enum TokenType {
 }
 
 #[derive(Debug)]
-pub struct Token<'a> {
+pub struct Token {
     pub typ : TokenType,
-    pub lexeme : &'a str,
+    pub lexeme : String,
     pub from_pos : Position,
     pub to_pos : Position
 }

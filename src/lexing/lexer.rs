@@ -1,14 +1,16 @@
 
-use std::{iter::Peekable, str::Chars};
+use std::str::Chars;
+
+use peekmore::PeekMoreIterator;
 
 use crate::{lexing::token::{*, TokenType::*}, position::Position};
 
 pub struct Lexer<'a> {
-    pub source : Peekable<Chars<'a>>,
+    pub source : PeekMoreIterator<Chars<'a>>,
     pub position : Position
 }
 
-impl <'a> Lexer<'a> {
+impl Lexer<'_> {
 
     fn next(&mut self) -> Option<char> {
         let char = self.source.next()?;
@@ -41,50 +43,52 @@ impl <'a> Lexer<'a> {
 
         let char = self.next()?; 
 
-        let token_type = match char {
-            '(' => Some(LEFTPAREN),
-            ')' => Some(RIGHTPAREN),
-            '{' => Some(LEFTBRACE),
-            '}' => Some(RIGHTBRACE),
-            ',' => Some(COMMA),
-            '.' => Some(DOT),
-            '+' => Some(PLUS),
-            '-' => Some(MINUS),
-            ';' => Some(SEMICOLON),
-            '*' => Some(STAR),
+        let (token_type, lexeme) = match char {
+            '(' => (Some(LEFTPAREN), None),
+            ')' => (Some(RIGHTPAREN), None),
+            '{' => (Some(LEFTBRACE), None),
+            '}' => (Some(RIGHTBRACE), None),
+            ',' => (Some(COMMA), None),
+            '.' => (Some(DOT), None),
+            '+' => (Some(PLUS), None),
+            '-' => (Some(MINUS), None),
+            ';' => (Some(SEMICOLON), None),
+            '*' => (Some(STAR), None),
             '!' => 
                 if self.match_peek('=') {
-                    Some(BANGEQUAL)
+                    (Some(BANGEQUAL), None)
                 } else {
-                    Some(BANG)
+                    (Some(BANG), None)
                 }
             '=' => 
                 if self.match_peek('=') {
-                    Some(EQUALEQUAL)
+                    (Some(EQUALEQUAL), None)
                 } else {
-                    Some(EQUAL)
+                    (Some(EQUAL), None)
                 }
             '<' => 
                 if self.match_peek('=') {
-                    Some(LESSEQUAL)
+                    (Some(LESSEQUAL), None)
                 } else {
-                    Some(LESS)
+                    (Some(LESS), None)
                 }
             '>' => 
                 if self.match_peek('=') {
-                    Some(GREATEREQUAL)
+                    (Some(GREATEREQUAL), None)
                 } else {
-                    Some(GREATER)
+                    (Some(GREATER), None)
                 }
             '/' =>
                 if self.match_peek('/') {
                   // A comment goes until the end of the line.
-                  while self.peek() != Some('\n') && self.peek().is_some() {
+                  let mut next = self.peek();
+                  while next != Some('\n') && next.is_some() {
                     let _ = self.next();
+                    next = self.peek();
                   }
-                  None
+                  (None, None)
                 } else {
-                  Some(SLASH)
+                  (Some(SLASH), None)
                 }
 
             x if x.is_whitespace() => {
@@ -93,12 +97,64 @@ impl <'a> Lexer<'a> {
                     let _ = self.next();
                     next = self.peek();
                 }
-                None
+                (None, None)
             }
+
+            x if x.is_ascii_digit() => {
+                let mut next = self.peek();
+                let mut buf = String::with_capacity(4);
+                buf.push(x);
+                while next.is_some() && next.unwrap().is_ascii_digit() {
+                    buf.push(next.unwrap());
+                    let _ = self.next();
+                    next = self.peek();
+                }
+                if next == Some('.') && self.source.advance_cursor().peek().is_some_and(|c| c.is_ascii_digit()){
+                    buf.push('.');
+                    self.source.reset_cursor();
+                    let _ = self.next();
+
+                    next = self.peek();
+                    while next.is_some() && next.unwrap().is_ascii_digit() {
+                        buf.push(next.unwrap());
+                        let _ = self.next();
+                        next = self.peek();
+                    }
+                }
+                (Some(NUMBER), Some(buf))
+            }
+
+            x if x.is_ascii_alphabetic() => {
+                let mut next = self.peek();
+                let mut buf = String::new();
+                buf.push(x);
+                while next.is_some() && next.unwrap().is_ascii_alphabetic() {
+                    buf.push(next.unwrap());
+                    let _ = self.next();
+                    next = self.peek();
+                }
+                (Some(IDENTIFIER), Some(buf))
+            }
+
+            '"' => {
+                let mut next = self.peek();
+                let mut buf = String::with_capacity(10);
+                while next != Some('"') && next.is_some() {
+                    buf.push(next.unwrap());
+                    let _ = self.next();
+                    next = self.peek();
+                }
+                if next.is_some() {
+                    (Some(STRING), Some(buf))
+                } else {
+                    print!("Encountered unterminated string starting at position {}.", init_pos.pretty_print());
+                    (None, None)
+                }
+            }, 
                 
             _ => {
                 print!("Encountered unknown character at position {}.", self.position.pretty_print());
-                None
+                (None, None)
             }
             
         };
@@ -107,7 +163,7 @@ impl <'a> Lexer<'a> {
             Some(typ) => {
                 Some(Token {
                     typ,
-                    lexeme : " ",
+                    lexeme : lexeme.unwrap_or(String::new()),
                     from_pos : init_pos,
                     to_pos : self.position
                 })
