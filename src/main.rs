@@ -6,6 +6,7 @@ use crate::position::Position;
 
 mod lexing;
 mod position;
+mod parsing;
 
 fn main() {
     let mut lex = lexing::lexer::Lexer {
