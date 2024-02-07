@@ -8,7 +8,7 @@ pub struct Position {
 
 impl Position {
     pub fn default() -> Position {
-        Position { line: 0, col: 0 }
+        Position { line: 1, col: 1 }
     }
 
     pub fn bump(self, n: u64) -> Position {
@@ -21,7 +21,7 @@ impl Position {
     pub fn brk(self) -> Position {
         Position {
             line: self.line + 1,
-            col: 0,
+            col: 1,
         }
     }
 
