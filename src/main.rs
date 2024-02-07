@@ -12,7 +12,7 @@ mod error;
 
 fn main() {
     let mut lex = lexing::lexer::Lexer {
-        source: "23 * 2 == 23 + 24".chars().peekmore(),
+        source: "false == (2 == false)".chars().peekmore(),
         position: Position::default(),
     };
 

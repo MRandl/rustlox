@@ -119,8 +119,20 @@ impl Parser<'_> {
                 STRING => Expr::Str(tok.lexeme.clone()),
                 _ => unreachable!()
             }
+        } else if tok.typ == LEFTPAREN { 
+            self.handle_pars()
         } else {
             panic!("found illegal token '{}' at position {}. Expected primary expression.", tok.lexeme, tok.from_pos)
+        }
+    }
+
+    fn handle_pars(&mut self) -> Expr {
+        let expr = self.expression();
+        let par = self.next();
+        if par.is_some_and(|x| x.typ == RIGHTPAREN) {
+            expr
+        } else {
+            panic!("found illegal token '{}' at position {}. Expected closing parenthesis.", par.map(|x| x.lexeme.clone()).unwrap_or("EOF".to_string()), par.map(|x| x.to_pos.pretty_print()).unwrap_or("end of file".to_string()))
         }
     }
 }
