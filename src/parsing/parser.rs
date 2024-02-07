@@ -52,7 +52,7 @@ impl<I: Iterator<Item = Token>> Parser<I> {
                 end : right.end,
                 expr : Expr::Binary {
                     e1: Box::new(expr),
-                    op: op,
+                    op,
                     e2: Box::new(right),
                 },
             }
@@ -160,7 +160,7 @@ impl<I: Iterator<Item = Token>> Parser<I> {
         let tok = self.next();
         match tok {
             Some(tok) => {
-                if vec![FALSE, TRUE, NIL, NUMBER, STRING].contains(&tok.typ) {
+                if [FALSE, TRUE, NIL, NUMBER, STRING].contains(&tok.typ) {
                     Ok(PositionedExpr {
                         expr : match tok.typ {
                             FALSE => Expr::F,
