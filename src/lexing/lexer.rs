@@ -118,7 +118,7 @@ impl Lexer<'_> {
                         let _ = self.next();
                         next = self.peek();
                     }
-                    (None, None)
+                    (Some(WHITESPACE), None)
                 } else {
                     (Some(SLASH), None)
                 }

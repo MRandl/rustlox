@@ -32,6 +32,6 @@ impl Position {
 
 impl Display for Position {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{{ line : {}, col : {}}}", self.line, self.col)
+        write!(f, "{{{}:{}}}", self.line, self.col)
     }
 }
