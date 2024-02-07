@@ -1,7 +1,7 @@
 use crate::position::Position;
 
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum TokenType {
     // Single-character tokens.
     LEFTPAREN,

@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 #[derive(Clone, Copy, Debug)]
 pub struct Position {
     line: u64,
@@ -25,5 +27,11 @@ impl Position {
 
     pub fn pretty_print(self) -> String {
         format!("{}:{}", self.line, self.col)
+    }
+}
+
+impl Display for Position {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{{ line : {}, col : {}}}", self.line, self.col)
     }
 }

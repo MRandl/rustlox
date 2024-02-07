@@ -35,6 +35,9 @@ impl Lexer<'_> {
         }
     }
 
+    /// Gets a character from the source and returns it. Returns None iff the end has been reached.
+    /// 
+    /// The source is updated so that the subsequent calls return the next characters.
     fn next(&mut self) -> Option<char> {
         let char = self.source.next()?;
         if char == '\n' {
@@ -105,6 +108,8 @@ impl Lexer<'_> {
                     (Some(GREATER), None)
                 }
             }
+
+            // A '/' is either a comment or a division, so we need to peek on the next char
             '/' => {
                 if self.match_peek('/') {
                     // A comment goes until the end of the line.
@@ -119,6 +124,7 @@ impl Lexer<'_> {
                 }
             }
 
+            // handle all whitespace recognized by Rust and ignore it
             x if x.is_whitespace() => {
                 let mut next = self.peek();
                 while next.is_some() && next.unwrap().is_whitespace() {
@@ -128,6 +134,8 @@ impl Lexer<'_> {
                 (None, None)
             }
 
+            // Numbers which may have a decimal point. '123' and '123.43' are accepted 
+            // but '123.blabla' should be parsed as 123, followed by a dot, followed by blabla
             x if x.is_ascii_digit() => {
                 let mut next = self.peek();
                 let mut buf = String::with_capacity(4);
@@ -158,6 +166,7 @@ impl Lexer<'_> {
                 (Some(NUMBER), Some(buf))
             }
 
+            // words, which may be keywords or identifiers
             x if x.is_ascii_alphabetic() => {
                 let mut next = self.peek();
                 let mut buf = String::new();
@@ -171,6 +180,7 @@ impl Lexer<'_> {
                 (Some(id), Some(buf))
             }
 
+            // string literals, parse until closing
             '"' => {
                 let mut next = self.peek();
                 let mut buf = String::with_capacity(10);

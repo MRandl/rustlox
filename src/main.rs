@@ -7,17 +7,27 @@ use crate::position::Position;
 mod lexing;
 mod position;
 mod parsing;
+mod interpreting;
+mod error;
 
 fn main() {
     let mut lex = lexing::lexer::Lexer {
-        source: "\"t'is this time of the year\" - 123321".chars().peekmore(),
+        source: "23 * 2 == 23 + 24".chars().peekmore(),
         position: Position::default(),
     };
 
+    let mut tokens = Vec::new();
     while !lex.is_done() {
         if let Some(x) = lex.scan_token() {
-            println!("{:?}", x)
+           tokens.push(x)
         }
+    }
+
+    let mut parser = parsing::parser::Parser{lex : tokens.iter().peekmore()};
+    let full_expr = parser.parse();
+    match full_expr {
+        Some(ex) => println!("{:?}", interpreting::interpret::interpret(&ex)),
+        None => println!("could not parse"),
     }
     println!("Hello, world!");
 }
