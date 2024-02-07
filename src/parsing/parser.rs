@@ -1,5 +1,3 @@
-use std::slice::Iter;
-
 use peekmore::PeekMoreIterator;
 
 use crate::lexing::token::{Token, TokenType, TokenType::*};
@@ -7,24 +5,23 @@ use crate::parsing::expr::{BinaryOp, Expr};
 
 use super::expr::UnaryOp;
 
-pub struct Parser <'a> {
-    pub lex : PeekMoreIterator<Iter<'a, Token>>
+pub struct Parser<I: Iterator> {
+    pub lex: PeekMoreIterator<I>,
 }
 
-impl Parser<'_> {
-
-    fn next(&mut self) -> Option<&Token> {
+impl<I: Iterator<Item = Token>> Parser<I> {
+    fn next(&mut self) -> Option<Token> {
         self.lex.next()
     }
 
     fn peek(&mut self) -> Option<&Token> {
-        self.lex.peek().copied()
+        self.lex.peek()
     }
 
-    fn peek_match(&mut self, types : Vec<TokenType>) -> bool {
+    fn peek_match(&mut self, types: Vec<TokenType>) -> bool {
         match self.peek() {
             None => false,
-            Some(tok) => types.contains(&tok.typ)
+            Some(tok) => types.contains(&tok.typ),
         }
     }
 
@@ -42,14 +39,18 @@ impl Parser<'_> {
             let op = match self.next().unwrap().typ {
                 BANGEQUAL => BinaryOp::NotEqual,
                 EQUALEQUAL => BinaryOp::Equalequal,
-                _ => unreachable!()
+                _ => unreachable!(),
             };
             let right = self.comparison();
-            expr = Expr::Binary { e1: Box::new(expr), op: op, e2: Box::new(right) }
+            expr = Expr::Binary {
+                e1: Box::new(expr),
+                op: op,
+                e2: Box::new(right),
+            }
         }
         expr
     }
-    
+
     fn comparison(&mut self) -> Expr {
         let mut expr = self.term();
         while self.peek_match(vec![GREATER, GREATEREQUAL, LESS, LESSEQUAL]) {
@@ -58,10 +59,14 @@ impl Parser<'_> {
                 GREATEREQUAL => BinaryOp::Geq,
                 LESS => BinaryOp::Le,
                 LESSEQUAL => BinaryOp::Leq,
-                _ => unreachable!()
+                _ => unreachable!(),
             };
             let right = self.term();
-            expr = Expr::Binary { e1: Box::new(expr), op, e2 : Box::new(right) }
+            expr = Expr::Binary {
+                e1: Box::new(expr),
+                op,
+                e2: Box::new(right),
+            }
         }
         expr
     }
@@ -72,10 +77,14 @@ impl Parser<'_> {
             let op = match self.next().unwrap().typ {
                 MINUS => BinaryOp::BinMinus,
                 PLUS => BinaryOp::Plus,
-                _ => unreachable!()
+                _ => unreachable!(),
             };
             let right = self.factor();
-            expr = Expr::Binary { e1: Box::new(expr), op, e2 : Box::new(right) }
+            expr = Expr::Binary {
+                e1: Box::new(expr),
+                op,
+                e2: Box::new(right),
+            }
         }
         expr
     }
@@ -86,10 +95,14 @@ impl Parser<'_> {
             let op = match self.next().unwrap().typ {
                 SLASH => BinaryOp::BinMinus,
                 STAR => BinaryOp::Times,
-                _ => unreachable!()
+                _ => unreachable!(),
             };
             let right = self.unary();
-            expr = Expr::Binary { e1: Box::new(expr), op, e2 : Box::new(right) }
+            expr = Expr::Binary {
+                e1: Box::new(expr),
+                op,
+                e2: Box::new(right),
+            }
         }
         expr
     }
@@ -99,10 +112,13 @@ impl Parser<'_> {
             let op = match self.next().unwrap().typ {
                 BANG => UnaryOp::Not,
                 MINUS => UnaryOp::UnaMinus,
-                _ => unreachable!()
+                _ => unreachable!(),
             };
             let right = self.unary();
-            Expr::Unary { op, e1: Box::new(right) }
+            Expr::Unary {
+                op,
+                e1: Box::new(right),
+            }
         } else {
             self.primary()
         }
@@ -117,22 +133,33 @@ impl Parser<'_> {
                 NIL => Expr::Nil,
                 NUMBER => Expr::Num(str::parse(&tok.lexeme).unwrap()),
                 STRING => Expr::Str(tok.lexeme.clone()),
-                _ => unreachable!()
+                _ => unreachable!(),
             }
-        } else if tok.typ == LEFTPAREN { 
+        } else if tok.typ == LEFTPAREN {
             self.handle_pars()
         } else {
-            panic!("found illegal token '{}' at position {}. Expected primary expression.", tok.lexeme, tok.from_pos)
+            panic!(
+                "found illegal token '{}' at position {}. Expected primary expression.",
+                tok.lexeme, tok.from_pos
+            )
         }
     }
 
     fn handle_pars(&mut self) -> Expr {
         let expr = self.expression();
         let par = self.next();
-        if par.is_some_and(|x| x.typ == RIGHTPAREN) {
+        if par.as_ref().is_some_and(|x| x.typ == RIGHTPAREN) {
             expr
         } else {
-            panic!("found illegal token '{}' at position {}. Expected closing parenthesis.", par.map(|x| x.lexeme.clone()).unwrap_or("EOF".to_string()), par.map(|x| x.to_pos.pretty_print()).unwrap_or("end of file".to_string()))
+            panic!(
+                "found illegal token '{}' at position {}. Expected closing parenthesis.",
+                par.as_ref()
+                    .map(|x| x.lexeme.clone())
+                    .unwrap_or("EOF".to_string()),
+                par.as_ref()
+                    .map(|x| x.to_pos.pretty_print())
+                    .unwrap_or("end of file".to_string())
+            )
         }
     }
 }

@@ -36,7 +36,7 @@ impl Lexer<'_> {
     }
 
     /// Gets a character from the source and returns it. Returns None iff the end has been reached.
-    /// 
+    ///
     /// The source is updated so that the subsequent calls return the next characters.
     fn next(&mut self) -> Option<char> {
         let char = self.source.next()?;
@@ -134,7 +134,7 @@ impl Lexer<'_> {
                 (None, None)
             }
 
-            // Numbers which may have a decimal point. '123' and '123.43' are accepted 
+            // Numbers which may have a decimal point. '123' and '123.43' are accepted
             // but '123.blabla' should be parsed as 123, followed by a dot, followed by blabla
             x if x.is_ascii_digit() => {
                 let mut next = self.peek();
