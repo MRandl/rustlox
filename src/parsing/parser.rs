@@ -195,7 +195,7 @@ impl<I: Iterator<Item = Token>> Parser<I> {
             expr
         } else {
             match (expr, par) {
-                (Ok(pexpr), None) => Err(vec![ParsingError::EarlyEof { pos: pexpr.end }]),
+                (Ok(pexpr), None) => Err(vec![ParsingError::EarlyEof { pos: pexpr.end }, ParsingError::UnclosedParenthesis { open_paren_start: *last_position }]),
                 (Ok(pexpr), Some(_)) => Ok(pexpr),
                 (Err(mut vec), None) => {
                     vec.push(ParsingError::EarlyEof { pos: *last_position });
