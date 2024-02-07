@@ -9,8 +9,8 @@ pub enum LoxValue {
     Nil,
 }
 
-pub fn interpret(expr: &Expr) -> Result<LoxValue, LoxError> {
-    match expr {
+pub fn interpret(pexpr: &PositionedExpr) -> Result<LoxValue, LoxError> {
+    match &pexpr.expr {
         Expr::Nil => Ok(Nil),
         Expr::Num(x) => Ok(Int(*x)),
         Expr::Str(s) => Ok(Strng(s.to_string())),

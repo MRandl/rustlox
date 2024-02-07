@@ -193,7 +193,7 @@ impl Lexer<'_> {
                     let _ = self.next();
                     (Some(STRING), Some(buf))
                 } else {
-                    print!(
+                    println!(
                         "Encountered unterminated string starting at position {}.",
                         init_pos.pretty_print()
                     );

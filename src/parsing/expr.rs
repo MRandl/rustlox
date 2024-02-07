@@ -1,3 +1,5 @@
+use crate::position::Position;
+
 #[derive(Debug)]
 pub enum UnaryOp {
     UnaMinus,
@@ -28,11 +30,18 @@ pub enum Expr {
 
     Unary {
         op: UnaryOp,
-        e1: Box<Expr>,
+        e1: Box<PositionedExpr>,
     },
     Binary {
-        e1: Box<Expr>,
+        e1: Box<PositionedExpr>,
         op: BinaryOp,
-        e2: Box<Expr>,
+        e2: Box<PositionedExpr>,
     },
+}
+
+#[derive(Debug)]
+pub struct PositionedExpr {
+    pub expr : Expr,
+    pub start : Position,
+    pub end : Position
 }

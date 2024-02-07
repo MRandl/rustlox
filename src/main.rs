@@ -32,9 +32,17 @@ fn main() {
         lex: tokens.peekmore(),
     };
     let full_expr = parser.parse();
-
     match full_expr {
-        Some(ex) => println!("{:?}", interpreting::interpret::interpret(&ex)),
-        None => println!("could not parse"),
+        Ok(pexpr) => {println!("{:?}", interpreting::interpret::interpret(&pexpr))},
+        Err(v) => {
+            for err in v {
+                match err {
+                    error::ParsingError::EarlyEof { pos } => todo!(),
+                    error::ParsingError::UnclosedParenthesis { open_paren_start } => todo!(),
+                    error::ParsingError::IllegalToken { start, end, expected } => todo!(),
+                }
+            }
+        },
     }
+
 }
