@@ -131,7 +131,7 @@ impl Lexer<'_> {
                     let _ = self.next();
                     next = self.peek();
                 }
-                (None, None)
+                (Some(WHITESPACE), None)
             }
 
             // Numbers which may have a decimal point. '123' and '123.43' are accepted
