@@ -114,7 +114,7 @@ impl<I: Iterator<Item = Token>> Parser<I> {
         while self.peek_match(vec![SLASH, STAR]) {
             let tok = self.next().unwrap();
             let op = match tok.typ {
-                SLASH => BinaryOp::BinMinus,
+                SLASH => BinaryOp::Div,
                 STAR => BinaryOp::Times,
                 _ => unreachable!(),
             };
