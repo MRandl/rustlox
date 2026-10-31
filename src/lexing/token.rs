@@ -1,9 +1,8 @@
-use crate::position::Position;
+use crate::position::Span;
 
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TokenType {
-    // Single-character tokens.
     LEFTPAREN,
     RIGHTPAREN,
     LEFTBRACE,
@@ -16,7 +15,6 @@ pub enum TokenType {
     SLASH,
     STAR,
 
-    // One or two character tokens.
     BANG,
     BANGEQUAL,
     EQUAL,
@@ -26,12 +24,10 @@ pub enum TokenType {
     LESS,
     LESSEQUAL,
 
-    // Literals.
     IDENTIFIER,
     STRING,
     NUMBER,
 
-    // Keywords.
     AND,
     CLASS,
     ELSE,
@@ -49,14 +45,55 @@ pub enum TokenType {
     VAR,
     WHILE,
 
-    WHITESPACE,
     EOF,
 }
 
-#[derive(Debug)]
+impl TokenType {
+    pub fn keyword(word: &str) -> Option<TokenType> {
+        use TokenType::*;
+        match word {
+            "and" => Some(AND),
+            "class" => Some(CLASS),
+            "else" => Some(ELSE),
+            "false" => Some(FALSE),
+            "for" => Some(FOR),
+            "fun" => Some(FUN),
+            "if" => Some(IF),
+            "nil" => Some(NIL),
+            "or" => Some(OR),
+            "print" => Some(PRINT),
+            "return" => Some(RETURN),
+            "super" => Some(SUPER),
+            "this" => Some(THIS),
+            "true" => Some(TRUE),
+            "var" => Some(VAR),
+            "while" => Some(WHILE),
+            _ => None,
+        }
+    }
+
+    pub fn starts_statement(self) -> bool {
+        use TokenType::*;
+        matches!(self, CLASS | FUN | VAR | FOR | IF | WHILE | PRINT | RETURN)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum Literal {
+    Number(f64),
+    Str(String),
+}
+
+#[derive(Clone, Debug)]
 pub struct Token {
     pub typ: TokenType,
     pub lexeme: String,
-    pub from_pos: Position,
-    pub to_pos: Position,
+    pub literal: Option<Literal>,
+    pub span: Span,
+}
+
+impl Token {
+    pub fn is(&self, typ: TokenType) -> bool {
+        self.typ == typ
+    }
 }
